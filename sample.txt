@@ -1,0 +1,6 @@
+let newItems : FoodItemStructure[] = items.getSelectedData(selectItemsIndex);
+setCurrentItems(newItems);
+setNewPages(Math.round(newItems.length/paginationValue) + shouldAddExtra(newItems));
+setFilters({category: "All Categories", status: "All Items", type: "All Types"})
+setPage(1);
+setPageParam("1");
