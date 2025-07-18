@@ -38,13 +38,20 @@ export default function Home() {
   const endElem = paginationValue * (page - 1) + Math.min(paginationValue, Math.abs(currentItems.length - (paginationValue * (page - 1))));
 
   const shouldAddExtra = (newItems : FoodItemStructure[]) => 
-    (newItems.length/5 === Math.floor(newItems.length/paginationValue) ? 0 : 1)
+    (newItems.length/paginationValue === Math.floor(newItems.length/paginationValue) ? 0 : 1)
 
   // Function to check if all the display items are selected
   const checkAllSelected = () => {
     let cnd = currentItems.every(item => selectItemsIndex.includes(item.itemno))
     return cnd;
   }
+
+  useEffect(() => {
+    if (startElem > endElem) {
+      handlePageChange(-1);
+      setNewPages(currentItems.length/paginationValue + shouldAddExtra(currentItems));
+    }
+  },[currentItems])
 
   //To register the handleClickOutside functions for the open-dropdown
   useEffect(() => {
@@ -138,7 +145,11 @@ export default function Home() {
   // To remove all the filters and fetch all the items
   const removeFilter = () => {
     setFilters({category: "All Categories", status: "All Items", type: "All Types"})
-    setCurrentItems(showOnlySelected ? items.getSelectedData(selectItemsIndex) : items.getData());
+    setCurrentItems(() => {
+      let newItems = items.getData();
+      setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
+      return newItems;
+    });
     setPage(1);
     setPageParam("1");
   }
@@ -158,9 +169,13 @@ export default function Home() {
   const editData = (fnCode: number, index: number) => {
     if (fnCode === 1) items.toggleAvailability(index);
     else if (fnCode === 2) items.deleteItem(index);
-    setCurrentItems(showOnlySelected ? items.getSelectedData(selectItemsIndex) : items.getData());
-    setCurrentItems(items.getData());
-    setNewPages(Math.round(currentItems.length/paginationValue) + shouldAddExtra(currentItems));
+    setCurrentItems(() => {
+      let newItems = items.getFilterData(items.getData(), filters.category, filters.status, filters.type);
+      setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
+      console.log(newItems, newItems.length, Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
+      setNewSearchParam("");
+      return newItems;
+    });
     setFilters(prev=> ({category: prev.category, status: prev.status, type: prev.type, }));
   }
   
