@@ -20,7 +20,7 @@ export default function Home() {
   const [pageParam, setPageParam] = useState("1");
   const [paginationValue, setPaginationValue] = useState<number>(5);
   const [isPaginationClicked, setIsPaginationClicked] = useState(false);
-  const [maxpage, setNewPages] = useState(Math.round(currentItems.length/paginationValue) + (currentItems.length/paginationValue === Math.round(currentItems.length/paginationValue) ? 0 : 1));
+  const [maxpage, setNewPages] = useState(Math.floor(currentItems.length/paginationValue) + (currentItems.length/paginationValue === Math.floor(currentItems.length/paginationValue) ? 0 : 1));
   const [openStates, setOpenStates] = useState<boolean[]>([false]);
   const [filters, setFilters] = useState({category: "All Categories", status: "All Items", type: "All Types"})
   const [searchParam, setNewSearchParam] = useState<string>("");
@@ -96,7 +96,7 @@ export default function Home() {
         })
       }
 
-    //Function to close status modification drop-down
+    //Function to close status bulk action modification drop-down
   const handleClickOutModify = (e : MouseEvent) =>
       (bulkActiondropdownRef.current && !bulkActiondropdownRef.current.contains(e.target as Node)) ? setIsBulkActionSelected(false) : "";
 
@@ -104,11 +104,20 @@ export default function Home() {
   const handleClickOutPagination = (e: MouseEvent) =>
     (paginationdropdownRef.current && !paginationdropdownRef.current.contains(e.target as Node)) ? setIsPaginationClicked(false) : "";
 
+   //Function to toggle the drop-down for bulk actions when the button is clicked again
+  const toggleDropdown = (index: number) =>
+    setOpenStates((prev : boolean[]) => {
+      const newArr = [...prev];
+      newArr[index] = !newArr[index];
+      return newArr;
+    })
+
   // To get items based on search
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") { 
       let newItems : FoodItemStructure[] = items.getItemsBySearch(searchParam);
-      setCurrentItems(() => newItems);
+      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
+      setCurrentItems(newItems);
       setNewPages(Math.floor(newItems.length/paginationValue) +shouldAddExtra(newItems));
       setFilters({category: "All Categories", status: "All Items", type: "All Types", });
       setPage(1);
@@ -137,6 +146,7 @@ export default function Home() {
     setFilters({category: "All Categories", status: "All Items", type: "All Types"})
     setCurrentItems(() => {
       let newItems = items.getData();
+      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
       setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
       return newItems;
     });
@@ -149,7 +159,7 @@ export default function Home() {
     setPaginationValue(value);
     setIsPaginationClicked(false);
     if(value <= currentItems.length) 
-      setNewPages(Math.round(currentItems.length/value) + shouldAddExtra(currentItems));
+      setNewPages(Math.floor(currentItems.length/value) + shouldAddExtra(currentItems));
     else setNewPages(1);
     setPage(1);
     setPageParam("1");
@@ -200,7 +210,7 @@ export default function Home() {
     let newIndices;
     setSelectItemsIndex(prev => {
       newIndices = prev.includes(itemno) ? prev.filter(elem => elem != itemno) : [...prev, itemno];
-      console.log(newIndices);
+      if (showOnlySelected) setCurrentItems(items.getSelectedData(newIndices));
       return newIndices;
     });
   }
@@ -242,23 +252,19 @@ export default function Home() {
 
   //Toggle between all data and selected data
   const showOnlySelectedData = () => {
-    let newItems : FoodItemStructure[] = (!showOnlySelected) ? items.getSelectedData(selectItemsIndex)
-    : items.getData();
+    let newItems : FoodItemStructure[];
+    if(searchParam === "") newItems = items.getFilterData((!showOnlySelected) ? items.getSelectedData(selectItemsIndex)
+    : items.getData(), filters.category, filters.status, filters.type);
+    else {
+      newItems = items.getItemsBySearch(searchParam);
+      if (!showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno)); 
+    }
     setCurrentItems(newItems);
-    setNewPages(Math.round(newItems.length/paginationValue) + shouldAddExtra(newItems));
-    setFilters({category: "All Categories", status: "All Items", type: "All Types"})
+    setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
     setPage(1);
     setPageParam("1");
     setShowOnlySelected(prev => !prev);
   }
-
-  //Function to toggle the drop-down for bulk actions when the button is clicked again
-  const toggleDropdown = (index: number) =>
-    setOpenStates((prev : boolean[]) => {
-      const newArr = [...prev];
-      newArr[index] = !newArr[index];
-      return newArr;
-    })
 
   return (
     <div>
