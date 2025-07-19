@@ -131,16 +131,6 @@ export default function Home() {
     })
     toggleDropdown(index);
   }
-  // useEffect(() => {
-  //   if (showOnlySelected){
-  //     let newItems : FoodItemStructure[] = items.getSelectedData(selectItemsIndex);
-  //     setCurrentItems(newItems);
-  //     setNewPages(Math.round(newItems.length/paginationValue) + shouldAddExtra(newItems));
-  //     setFilters({category: "All Categories", status: "All Items", type: "All Types"})
-  //     setPage(1);
-  //     setPageParam("1");
-  //   }
-  // }, [selectItemsIndex]);
 
   // To remove all the filters and fetch all the items
   const removeFilter = () => {
@@ -168,16 +158,17 @@ export default function Home() {
   // Editing item from actions
   const editData = (fnCode: number, index: number) => {
     if (fnCode === 1) items.toggleAvailability(index);
-    else if (fnCode === 2) items.deleteItem(index);
+    else if (fnCode === 2) {
+      items.deleteItem(index);
+      changeSelectedItems(index);
+    }
     setCurrentItems(() => {
-       let newItems: FoodItemStructure[];
+      let newItems: FoodItemStructure[];
       if (searchParam === "") newItems = items.getFilterData(items.getData(), filters.category, filters.status, filters.type);
       else newItems = items.getItemsBySearch(searchParam);
       setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
-      console.log(newItems, newItems.length, Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
       return newItems;
     });
-    setFilters(prev=> ({category: prev.category, status: prev.status, type: prev.type, }));
   }
   
   // To apply bulk actions
@@ -186,30 +177,34 @@ export default function Home() {
     if (select === "Mark as Available") items.toggleBulkAvailability(0, selectItemsIndex);
     else if (select === "Mark as Unavailable") items.toggleBulkAvailability(1, selectItemsIndex);
     else if (select === "Delete selected") items.deleteBulkItems(selectItemsIndex);
-    setCurrentItems(items.getData());
-    setNewPages(Math.round(currentItems.length/paginationValue) + shouldAddExtra(currentItems));
-    setFilters(prev=> ({category: prev.category, status: prev.status, type: prev.type, }));
+    setCurrentItems(() => {
+      let newItems :FoodItemStructure[];
+      if (searchParam === "") newItems = items.getFilterData(items.getData(),filters.category, filters.status, filters.type);
+      else newItems = items.getItemsBySearch(searchParam);
+      setNewPages(() => {
+        let newPages = Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems);
+        if (page > newPages){
+          setPage(newPages); 
+          setPageParam(`${newPages}`);
+        }
+        return newPages;
+      });
+      return newItems
+    });
     setSelectItemsIndex([]);
     setSelectedBulkAction(0);
   } 
   
   // Handling selected items
   const changeSelectedItems = (itemno: number) =>{
-    let newIndices, newItems;
+    let newIndices;
     setSelectItemsIndex(prev => {
       newIndices = prev.includes(itemno) ? prev.filter(elem => elem != itemno) : [...prev, itemno];
       console.log(newIndices);
-      newItems = items.getSelectedData(newIndices);
-      if(showOnlySelected) setCurrentItems(newItems);
-      setNewPages(Math.round(newItems.length/paginationValue) + shouldAddExtra(newItems));
-      setFilters({category: "All Categories", status: "All Items", type: "All Types"})
-      setPage(1);
-      setPageParam("1");
       return newIndices;
     });
   }
     
-
   //To change page
   const handlePageChange = ( step: number) => {
     setPage(prev => {
