@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org) project created with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
+First clone the repository into your local machine:
+```bash
+git clone https://github.com/Hp2006dec10/admin_dashboard.git
+```
 
-First, run the development server:
+Then install all the dependencies:
+```bash
+npm install
+```
 
+Now, run the development server:
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## App design layout
+- The dashboard page that opens first is just a sample page. Click on Menu management to navigate to the menu page.
+- Almost all the functionalities in the main page are implemented.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Code order
+1. Data fetching using the class `FoodItemDetails`
+2. State variables implemented using `useState`
+3. `HTMLDivElement` references for drop-down functionality
+4. Useful constants
+5. `useEffect` hooks and handler functions to handle the drop-down functionality
+6. Getter functions that oeprate on data based on different filters
+7. Write functions that edit the data
+8. Pagination and page navigation functions
 
-## Learn More
+**NOTE: This is not a mandatory order and used only for easier understanding and navigation
 
-To learn more about Next.js, take a look at the following resources:
+## Data management
+- As of now, the menu item data is implemented through a sample variable, you any change made to the menu is not persistent across `refresh`.
+- However, data access is done by the virtue of `Object Oriented Programming` approach which simplifies the code to upgrade to database version.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Features to be added
+- Responsive design
+- Addition of new items
+- Management of categories
+- Database connection and working with real time data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**NOTE: Any update to the UI is appreciated and encouraged.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
