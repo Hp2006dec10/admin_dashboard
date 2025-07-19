@@ -37,6 +37,7 @@ export default function Home() {
   const startElem = paginationValue * (page - 1) + 1;
   const endElem = paginationValue * (page - 1) + Math.min(paginationValue, Math.abs(currentItems.length - (paginationValue * (page - 1))));
 
+  // Function to check page addition parameter
   const shouldAddExtra = (newItems : FoodItemStructure[]) => 
     (newItems.length/paginationValue === Math.floor(newItems.length/paginationValue) ? 0 : 1)
 
@@ -46,6 +47,7 @@ export default function Home() {
     return cnd;
   }
 
+  // Page change when all items in the page are deleted
   useEffect(() => {
     if (startElem > endElem) {
       handlePageChange(-1);
@@ -53,7 +55,7 @@ export default function Home() {
     }
   },[currentItems])
 
-  //To register the handleClickOutside functions for the open-dropdown
+  //To register the handle click outside functions for the filter dropdowns
   useEffect(() => {
     const handlers =  openStates.map((isOpen, index) => {
       if (isOpen){
@@ -82,7 +84,7 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutPagination);
   }, [isPaginationClicked]);
 
-  // Function to close dropdown on clicking outside for filters
+  // Function to close filters dropdown
   const handleClickOutside = (index: number) => 
     (e : MouseEvent) => {
       const target = e.target as Node;
@@ -96,15 +98,15 @@ export default function Home() {
         })
       }
 
-    //Function to close status bulk action modification drop-down
+  // Function to close bulk action drop-down
   const handleClickOutModify = (e : MouseEvent) =>
       (bulkActiondropdownRef.current && !bulkActiondropdownRef.current.contains(e.target as Node)) ? setIsBulkActionSelected(false) : "";
 
-  //Function to close pagination dropdown
+  // Function to close pagination dropdown
   const handleClickOutPagination = (e: MouseEvent) =>
     (paginationdropdownRef.current && !paginationdropdownRef.current.contains(e.target as Node)) ? setIsPaginationClicked(false) : "";
 
-   //Function to toggle the drop-down for bulk actions when the button is clicked again
+   //Function to toggle the drop-down for filters
   const toggleDropdown = (index: number) =>
     setOpenStates((prev : boolean[]) => {
       const newArr = [...prev];
@@ -141,7 +143,7 @@ export default function Home() {
     toggleDropdown(index);
   }
 
-  // To remove all the filters and fetch all the items
+  // To remove all the filters 
   const removeFilter = () => {
     setFilters({category: "All Categories", status: "All Items", type: "All Types"})
     setCurrentItems(() => {
@@ -154,18 +156,23 @@ export default function Home() {
     setPageParam("1");
   }
 
-  // To change pagination value
-  const changePagination = (value : number) => {
-    setPaginationValue(value);
-    setIsPaginationClicked(false);
-    if(value <= currentItems.length) 
-      setNewPages(Math.floor(currentItems.length/value) + shouldAddExtra(currentItems));
-    else setNewPages(1);
+  //Toggle between all data and selected data
+  const showOnlySelectedData = () => {
+    let newItems : FoodItemStructure[];
+    if(searchParam === "") newItems = items.getFilterData((!showOnlySelected) ? items.getSelectedData(selectItemsIndex)
+    : items.getData(), filters.category, filters.status, filters.type);
+    else {
+      newItems = items.getItemsBySearch(searchParam);
+      if (!showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno)); 
+    }
+    setCurrentItems(newItems);
+    setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
     setPage(1);
     setPageParam("1");
-  }  
+    setShowOnlySelected(prev => !prev);
+  }
 
-  // Editing item from actions
+  // Editing individual item from actions
   const editData = (fnCode: number, index: number) => {
     if (fnCode === 1) items.toggleAvailability(index);
     else if (fnCode === 2) {
@@ -205,6 +212,19 @@ export default function Home() {
     setSelectedBulkAction(0);
   } 
   
+  // Toggling the select all
+  const toggleSelectAll = () => 
+    (currentItems.length > 0 && checkAllSelected()) ? 
+    setSelectItemsIndex((prev) => {
+      let oldIndex : number[] = [], oldItems : string[] = [];
+      currentItems.forEach(item => {
+        if (selectItemsIndex.includes(item.itemno)) {oldIndex.push(item.itemno); oldItems.push(item.itemname)}; 
+      })
+      let newIndex = prev.filter(index => !oldIndex.includes(index));
+      return newIndex;
+    }) : 
+    setSelectItemsIndex(currentItems.map(item => item.itemno));
+
   // Handling selected items
   const changeSelectedItems = (itemno: number) =>{
     let newIndices;
@@ -215,6 +235,17 @@ export default function Home() {
     });
   }
     
+  // To change pagination value
+  const changePagination = (value : number) => {
+    setPaginationValue(value);
+    setIsPaginationClicked(false);
+    if(value <= currentItems.length) 
+      setNewPages(Math.floor(currentItems.length/value) + shouldAddExtra(currentItems));
+    else setNewPages(1);
+    setPage(1);
+    setPageParam("1");
+  }  
+
   //To change page
   const handlePageChange = ( step: number) => {
     setPage(prev => {
@@ -237,42 +268,12 @@ export default function Home() {
     }
   }
 
-  // Toggling the select all
-  const toggleSelectAll = () => 
-    (currentItems.length > 0 && checkAllSelected()) ? 
-    setSelectItemsIndex((prev) => {
-      let oldIndex : number[] = [], oldItems : string[] = [];
-      currentItems.forEach(item => {
-        if (selectItemsIndex.includes(item.itemno)) {oldIndex.push(item.itemno); oldItems.push(item.itemname)}; 
-      })
-      let newIndex = prev.filter(index => !oldIndex.includes(index));
-      return newIndex;
-    }) : 
-    setSelectItemsIndex(currentItems.map(item => item.itemno));
-
-  //Toggle between all data and selected data
-  const showOnlySelectedData = () => {
-    let newItems : FoodItemStructure[];
-    if(searchParam === "") newItems = items.getFilterData((!showOnlySelected) ? items.getSelectedData(selectItemsIndex)
-    : items.getData(), filters.category, filters.status, filters.type);
-    else {
-      newItems = items.getItemsBySearch(searchParam);
-      if (!showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno)); 
-    }
-    setCurrentItems(newItems);
-    setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
-    setPage(1);
-    setPageParam("1");
-    setShowOnlySelected(prev => !prev);
-  }
-
   return (
     <div>
       <TopNav useSave={true}/>
       <main className="flex flex-wrap w-full dark:text-black">
         <Navbar />
         {/* Page */}
-
         <div id="page-top" className="max-h-[80vh] overflow-auto scrollable w-5/6 font-[family-name:var(--font-geist-sans)] flex flex-col gap-5 bg-gray-100 px-5 py-10 text-[20px]">
           {/* Top */}
           <div className="w-full flex justify-between items-center">
@@ -285,6 +286,7 @@ export default function Home() {
 
           {/* Filters*/}
           <div className="flex justify-between items-center w-full bg-white px-4 rounded-[7.5px] border-1 border-[rgba(0,0,0,0.1)] gap-4">
+            {/*Clear filters option */}
             {(filters.category!= "All Categories" || filters.status != "All Items" || filters.type != "All Types" || searchParam != "") && 
             <div className="w-1/7 h-full p-2 flex items-center gap-2">
               <div className="w-fit h-fit p-2 py-1 flex items-center gap-2 bg-gray-300 text-gray-500 text-[15px] rounded-[7.5px]">
@@ -299,7 +301,7 @@ export default function Home() {
                 <FontAwesomeIcon icon={faSearch} className="text-gray-400 px-2"></FontAwesomeIcon>
                 <input type="text" ref={inputRef} placeholder="Search items" className="focus:outline-none" value={searchParam} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSearchParam(()=> e.target.value)} onKeyDown={handleKeyDown}/>
               </div>
-              {/* Spec filters */}
+              {/* Specific filters */}
               <FilterButton dropDownRefs={dropDownRefs} filterIndex={0} toggleDropdown={toggleDropdown} selectedBulkAction={filters.category} openStates={openStates} data={categories} filter="category" handleValueChange={handleFilterChange}/>
               <FilterButton dropDownRefs={dropDownRefs} filterIndex={1} toggleDropdown={toggleDropdown} selectedBulkAction={filters.status} openStates={openStates} data={status} filter="status" handleValueChange={handleFilterChange}/>
               <FilterButton dropDownRefs={dropDownRefs} filterIndex={2} toggleDropdown={toggleDropdown} selectedBulkAction={filters.type} openStates={openStates} data={types} filter="type" handleValueChange={handleFilterChange}/>
@@ -308,10 +310,11 @@ export default function Home() {
 
           {/* Select and modify feature */}
           <div className="w-full bg-white py-4 px-5 rounded-[7.5px] border-1 border-[rgba(0,0,0,0.1)] flex items-center gap-5">
+            {/* No of items selected*/}
             <div className="w-1/5 flex gap-3 items-center">
               <div>{selectItemsIndex.length === 0 ? "No items selected" : selectItemsIndex.length === 1 ? "1 item selected" : `${selectItemsIndex.length} items selected`}</div>
             </div>
-            
+            {/* Applying bulk actions */}
             <div className={`w-3/5 justify-between flex items-center ${selectItemsIndex.length === 0 ? "grayscale opacity-[0.5] pointer-events-none cursor-not-allowed" : ""}`}>            
               <div className="relative w-2/5" ref={bulkActiondropdownRef}>
                 <button className="bg-white w-full border border-gray-300 rounded px-4 py-2 text-left flex justify-between gap-2 items-center focus:outline-none  hover:border-blue-500" onClick={() => setIsBulkActionSelected(prev => !prev)}>{bulkActions[selectedBulkAction]}
@@ -337,6 +340,7 @@ export default function Home() {
           <div className="w-full bg-white rounded-[7.5px] border-1 border-[rgba(0,0,0,0.1)]">
             {/* Navigation configurations */}
             <div className="border-b-1 border-[rgba(0,0,0,0.1)] w-full py-5 px-5 flex justify-between">
+                {/*Items per page configuration */}
                 <div className="flex items-center gap-2 w-1/4">
                   <p className="w-1/2">Items per page</p>
                   <div className="relative w-1/4" ref={paginationdropdownRef}>
@@ -356,6 +360,7 @@ export default function Home() {
                     }
                   </div>
                 </div>
+                {/* Toggle only selected configuration*/}
                 <div>
                   Show only selected
                   <FontAwesomeIcon icon={showOnlySelected ? faToggleOn : faToggleOff} className="px-2" onClick={() => showOnlySelectedData()}></FontAwesomeIcon>
@@ -392,6 +397,7 @@ export default function Home() {
             </div>
             :
             <div className="w-full flex flex-col items-center p-10">
+              {/* No item found configuration*/}
               <Image src="/chef-duck.jpg" width={300} height={300} className="grayscale opacity-[0.4]" alt="no-duck"/>
               <p className="text-gray-400 text-[40px]">Oops! We can't find any dish for you...</p>
             </div>
