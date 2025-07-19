@@ -10,7 +10,7 @@ export type FoodItemStructure = {
   status: string[],
 }
 
-let FoodItemData : FoodItemStructure[] = [
+const FoodItemData : FoodItemStructure[] = [
   {
     itemno : 0,
     imgsrc : "/dummy-image.jpg",
@@ -301,8 +301,4 @@ export class FoodItemDetails{
   deleteBulkItems(selectItemsIndex: number[]) : void {
     this.data = this.data.filter(item => !selectItemsIndex.includes(item.itemno))
   }
-
-
 }
-
-export default FoodItemData;

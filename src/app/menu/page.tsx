@@ -8,7 +8,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
 import FoodItem from "./FoodItem";
 import FilterButton from "./FilterButton";
 import Image from "next/image";
-import FoodItemData, { FoodItemStructure, FoodItemDetails } from "./FoodItemDetails";
+import { FoodItemStructure, FoodItemDetails } from "./FoodItemDetails";
 
 const items = new FoodItemDetails();
 const status = items.status, types = items.types, bulkActions = items.bulkActions, categories = items.categories;
