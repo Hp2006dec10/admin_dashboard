@@ -1,17 +1,19 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faTrash, faLeaf, faPenToSquare, faToggleOn, faDrumstickBite, faCarrot, faSeedling, faToggleOff } from "@fortawesome/free-solid-svg-icons"
 import Image from "next/image"
-import FoodItemDetails, { FoodItemStructure } from "./FoodItemDetails";
+import { FoodItemStructure } from "../../components/utils/FoodItemDetails";
 
 export default function FoodItem({data, ordered, changeSelectedItems, dataEdit} : {data:FoodItemStructure, ordered: number[], changeSelectedItems: (itemno : number) => void, dataEdit: (fnCode:number, index: number) => void}){
   const {itemno, imgsrc, itemname, itemdesc, category, type, price, discount, status} = data;
+  let url;
+  url = (imgsrc != null) ? URL.createObjectURL(imgsrc) : '/dummy-image.jpg';
 
   return(
     <div className="border-b-1 border-[rgba(0,0,0,0.1)] w-full flex px-5">
       <div className="w-1/40 flex items-center"><input type="checkbox" checked={ordered.length> 0 && ordered.includes(itemno)} onChange={() => changeSelectedItems(itemno)}/></div>
 
       <div className='w-1/4 flex justify-start gap-5 items-center px-5 py-2'>
-        <Image src={imgsrc} className="w-1/3 h-fit" width={20} height={20} alt="not found"/>
+        <Image src={url} className="w-1/3 h-fit" width={20} height={20} alt="not found"/>
         <div className="w-2/3">
           <p className="font-medium">{itemname}</p>
           <p className="text-gray-500 text-[15px]">{itemdesc}</p>

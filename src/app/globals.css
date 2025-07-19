@@ -35,3 +35,7 @@ body {
   display: none;
 }
 
+.popup{
+  background: rgba(0, 0, 0, 0.1);
+}
+

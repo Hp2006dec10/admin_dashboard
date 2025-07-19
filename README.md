@@ -37,11 +37,10 @@ NOTE: This is not a mandatory order and used only for easier understanding and n
 ## Data management
 - As of now, the menu item data is implemented through a sample variable, you any change made to the menu is not persistent across `refresh`.
 - However, data access is done by the virtue of `Object Oriented Programming` approach which simplifies the code to upgrade to database version.
+- Now addition of new items is also supported. New Items addition has a wide support over images, local videos or even `youTube` video links
 
 ## Features to be added
 - Responsive design
-- Addition of new items
-- Management of categories
 - Database connection and working with real time data
 
 NOTE: Any update to the UI is appreciated and encouraged.

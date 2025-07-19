@@ -1,5 +1,6 @@
-import TopNav from "./components/topnav";
-import Navbar from "./components/leftnav";
+import TopNav from "../components/navbar/topnav"
+import Navbar from "../components/navbar/leftnav";
+
 export default function Home() {
   return (
     <div className="dark:text-black">
