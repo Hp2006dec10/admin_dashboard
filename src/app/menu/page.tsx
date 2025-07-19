@@ -170,10 +170,11 @@ export default function Home() {
     if (fnCode === 1) items.toggleAvailability(index);
     else if (fnCode === 2) items.deleteItem(index);
     setCurrentItems(() => {
-      let newItems = items.getFilterData(items.getData(), filters.category, filters.status, filters.type);
+       let newItems: FoodItemStructure[];
+      if (searchParam === "") newItems = items.getFilterData(items.getData(), filters.category, filters.status, filters.type);
+      else newItems = items.getItemsBySearch(searchParam);
       setNewPages(Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
       console.log(newItems, newItems.length, Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems));
-      setNewSearchParam("");
       return newItems;
     });
     setFilters(prev=> ({category: prev.category, status: prev.status, type: prev.type, }));
