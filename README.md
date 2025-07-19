@@ -32,7 +32,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 7. Write functions that edit the data
 8. Pagination and page navigation functions
 
-**NOTE: This is not a mandatory order and used only for easier understanding and navigation
+** NOTE: This is not a mandatory order and used only for easier understanding and navigation
 
 ## Data management
 - As of now, the menu item data is implemented through a sample variable, you any change made to the menu is not persistent across `refresh`.
@@ -44,5 +44,5 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - Management of categories
 - Database connection and working with real time data
 
-**NOTE: Any update to the UI is appreciated and encouraged.
+** NOTE: Any update to the UI is appreciated and encouraged.
 
