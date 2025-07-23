@@ -21,6 +21,7 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
           { id: '4', name: 'Beverages' }
         ]
   );
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   // State for new category input
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -136,27 +137,26 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
 
   if (!isOpen) return null;
 
-  return (
+ return (
+  <>
+    {/* Main popup - Hide when delete confirmation is showing */}
+    {!categoryToDelete && (
       <div className="fixed inset-0 flex items-center justify-center z-30 p-4">
         <div className="fixed inset-0 popup"></div>
-        {/* Main popup container */}
         <div className="relative z-50 bg-white rounded-lg shadow-xl w-full max-w-md">
-          {/* Header section */}
+          {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
-              Manage Categories
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">Manage Categories</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <X size={20} className='cursor-pointer'/>
+              <X size={20} className="cursor-pointer" />
             </button>
           </div>
 
-          {/* Content section */}
+          {/* Content */}
           <div className="p-6">
-            {/* Add new category section */}
             <div className="flex gap-2 mb-6">
               <input
                 type="text"
@@ -176,7 +176,7 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
               </button>
             </div>
 
-            {/* Categories list */}
+            {/* Category list */}
             <div className="space-y-2">
               {categories.map((category, index) => (
                 <div
@@ -189,12 +189,10 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
                     draggedIndex === index ? 'opacity-50' : ''
                   } ${editingId === category.id ? 'bg-gray-50' : ''}`}
                 >
-                  {/* 6-dot drag handle */}
                   <div className="flex-shrink-0 cursor-move">
                     <GripVertical size={16} className="text-gray-500" />
                   </div>
-                  
-                  {/* Category name or edit input */}
+
                   {editingId === category.id ? (
                     <input
                       type="text"
@@ -206,12 +204,9 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
                       autoFocus
                     />
                   ) : (
-                    <span className="flex-1 text-gray-900 font-medium">
-                      {category.name}
-                    </span>
+                    <span className="flex-1 text-gray-900 font-medium">{category.name}</span>
                   )}
-                  
-                  {/* Action buttons */}
+
                   <div className="flex gap-2">
                     {editingId === category.id ? (
                       <>
@@ -221,7 +216,7 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
                           title="Save changes"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="20,6 9,17 4,12"/>
+                            <polyline points="20,6 9,17 4,12" />
                           </svg>
                         </button>
                         <button
@@ -240,16 +235,16 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
                           title="Edit category"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
                           </svg>
                         </button>
                         <button
-                          onClick={() => handleDeleteCategory(category.id)}
+                          onClick={() => setCategoryToDelete(category)}
                           className="p-1 text-red-500 hover:text-red-700 transition-colors"
                           title="Delete category"
                         >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                           </svg>
                         </button>
                       </>
@@ -260,7 +255,7 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
             </div>
           </div>
 
-          {/* Footer section with action buttons */}
+          {/* Footer */}
           <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
             <button
               onClick={handleCancel}
@@ -277,7 +272,50 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
           </div>
         </div>
       </div>
+    )}
 
-  );
-};
+    {/* Delete confirmation popup  */}
+    {categoryToDelete && (
+      <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 popup"></div>
+        <div className="relative z-60 bg-white rounded-lg shadow-xl w-full max-w-lg">
+          <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Confirm Deletion</h2>
+            <button
+              onClick={() => setCategoryToDelete(null)}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X size={20} className="cursor-pointer" />
+            </button>
+          </div>
+          <div className="p-6 text-gray-800">
+            Are you sure you want to delete the category{' '}
+            <span className="font-semibold text-red-600">"{categoryToDelete.name}"</span>?
+            <br />
+            This will also remove all items associated with it.
+          </div>
+          <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
+            <button
+              onClick={() => setCategoryToDelete(null)}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                handleDeleteCategory(categoryToDelete.id);
+                setCategoryToDelete(null);
+              }}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+            >
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </>
+);
+}
+
 export default ManageCategories;

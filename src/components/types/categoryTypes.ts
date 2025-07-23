@@ -13,4 +13,5 @@ export interface ManageCategoriesProps {
   onClose: () => void;
   onSave: (categories: Category[]) => void;
   initialCategories?: Category[];
+  
 }
