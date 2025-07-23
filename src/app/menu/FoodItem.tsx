@@ -41,7 +41,7 @@ export default function FoodItem({data, ordered, changeSelectedItems, dataEdit} 
 
       <div className="w-1/4 flex justify-start gap-5 items-center">
       {(status.includes("Available")) ? <p className="h-fit text-green-500 bg-green-100 rounded-[10px] px-2 text-[15px]">Available</p> : ""}
-      {(status.includes("Unavailable")) ? <p className="h-fit text-red-500 bg-red-100 rounded-[10px] px-2 text-[15px]">Unvailable</p> : ""}
+      {(status.includes("Unavailable")) ? <p className="h-fit text-red-500 bg-red-100 rounded-[10px] px-2 text-[15px]">Unavailable</p> : ""}
       {(status.includes("Bestseller")) ? <p className="h-fit text-orange-500 bg-orange-100 rounded-[10px] px-2 text-[15px]">Bestseller</p> : ""}
       {(status.includes("Trending")) ? <p className="h-fit text-purple-500 bg-purple-100 rounded-[10px] px-2 text-[15px]">Trending</p> : ""}
       </div>
