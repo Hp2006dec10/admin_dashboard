@@ -11,9 +11,9 @@ import { Image as ImageIcon, Video as VideoIcon, ChevronDown,CloudUpload} from "
 
 
 //AddMenuItemForm Component
-
-const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, onClose}) => { 
-  //Three props
+//Added existing Item prop for edit popup
+const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, onClose,existingItem}) => { 
+  //Four props
   const initialState: MenuItem = {   //initial State
     itemName: '',
     price:0.00,
@@ -36,8 +36,9 @@ const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, o
     spiceLevel:"Mild",
     availability:false,
   };
-
-  const [ItemData, setItemData] = useState<MenuItem>(initialState);  
+//Modified: added extra existingItem for edit popup
+const [ItemData, setItemData] = useState<MenuItem>(existingItem || initialState);
+  
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); 
@@ -67,6 +68,26 @@ const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, o
     return () => document.removeEventListener('click', handleClickOutside);
   }, 
   [isDropdownOpen]);
+
+  //For image preview on edit popup
+  useEffect(() => {
+  if (existingItem) {
+    if (existingItem.itemImage instanceof File) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(existingItem.itemImage);
+    }
+
+    if (typeof existingItem.itemVideo === "string") {
+      setVideoPreview(null); // text link, so no preview
+    } else if (existingItem.itemVideo instanceof File) {
+      setVideoPreview(URL.createObjectURL(existingItem.itemVideo));
+    }
+  }
+}, [existingItem]);
+
 
   // FORM HANDLING
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -225,7 +246,10 @@ const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, o
       <div className="bg-white rounded-lg shadow-x h-[90vh] z-30 overflow-hidden flex flex-col px-6 py-6">
         {/* Header with Title and X Button */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0">
-          <h2 className="text-xl font-medium text-gray-900">Add New Menu Item</h2>
+        {/*conditional rendering for the edit*/}
+          <h2 className="text-xl font-medium text-gray-900">
+                  {existingItem ? "Edit Menu Item" : "Add New Menu Item"}
+          </h2>
           <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl font-normal leading-none cursor-pointer">×</button>
         </div> 
 
@@ -618,9 +642,10 @@ const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, o
           onClick={handlesubmit}
           className="px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#463ee4]"
           style={{ backgroundColor: '#463ee4' }}
-          >
-            Save Item
-          </button>
+        >
+          {/*conditional rendering*/}
+          {existingItem ? "Update Item" : "Save Item"}
+        </button>
         </div>
       
       </div>

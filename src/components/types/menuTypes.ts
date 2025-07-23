@@ -35,4 +35,5 @@ export interface AddMenuItemFormProps {
   onSave: (item: MenuItem) => void;
   categories: string[];
   onClose:() =>void;
+  existingItem?: MenuItem; //additional prop for edit
 }
