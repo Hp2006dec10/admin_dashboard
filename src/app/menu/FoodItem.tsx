@@ -3,7 +3,13 @@ import { faTrash, faLeaf, faPenToSquare, faToggleOn, faDrumstickBite, faCarrot, 
 import Image from "next/image"
 import { FoodItemStructure } from "../../components/utils/FoodItemDetails";
 
-export default function FoodItem({data, ordered, changeSelectedItems, dataEdit} : {data:FoodItemStructure, ordered: number[], changeSelectedItems: (itemno : number) => void, dataEdit: (fnCode:number, index: number) => void}){
+export default function FoodItem({data, ordered, changeSelectedItems, dataEdit, confirmDelete} : {
+    data: FoodItemStructure, 
+    ordered: number[], 
+    changeSelectedItems: (itemno : number) => void, 
+    dataEdit: (fnCode:number, index: number) => void, 
+    confirmDelete: (itemno : number) => void
+  }){
   const {itemno, imgsrc, itemname, itemdesc, category, type, price, discount, status} = data;
   let url;
   url = (imgsrc != null) ? URL.createObjectURL(imgsrc) : '/dummy-image.jpg';
@@ -49,7 +55,7 @@ export default function FoodItem({data, ordered, changeSelectedItems, dataEdit} 
       <div className="w-1/10 flex items-center justify-start gap-5">
         <FontAwesomeIcon icon={faPenToSquare} className="text-blue-800 cursor-pointer" onClick={() => dataEdit(0, itemno)}></FontAwesomeIcon>
         <FontAwesomeIcon icon={!status.includes("Unavailable")? faToggleOn : faToggleOff} className="text-gray-800 cursor-pointer" onClick={()=> dataEdit(1, itemno)}></FontAwesomeIcon>
-        <FontAwesomeIcon icon={faTrash} className="text-red-600 cursor-pointer" onClick={()=> dataEdit(2, itemno)}></FontAwesomeIcon>
+        <FontAwesomeIcon icon={faTrash} className="text-red-600 cursor-pointer" onClick={()=> confirmDelete(itemno)}></FontAwesomeIcon>
       </div>
     </div>
   )

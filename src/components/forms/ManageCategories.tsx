@@ -141,8 +141,6 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
   <>
     {/* Main popup - Hide when delete confirmation is showing */}
     {!categoryToDelete && (
-      <div className="fixed inset-0 flex items-center justify-center z-30 p-4">
-        <div className="fixed inset-0 popup"></div>
         <div className="relative z-50 bg-white rounded-lg shadow-xl w-full max-w-md">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -271,7 +269,6 @@ const ManageCategories: React.FC<ManageCategoriesProps> = ({ //Main Component
             </button>
           </div>
         </div>
-      </div>
     )}
 
     {/* Delete confirmation popup  */}

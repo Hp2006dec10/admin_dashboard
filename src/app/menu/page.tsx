@@ -12,6 +12,7 @@ import { FoodItemStructure, FoodItemDetails } from "../../components/utils/FoodI
 import ManageCategories from "../../components/forms/ManageCategories";
 import { MenuItem } from "../../components/types/menuTypes";
 import AddMenuItemForm from "../../components/forms/AddItemForm";
+import ConfirmationPopup from "../../components/utils/ConfirmationPopup";
 
 
 const items = new FoodItemDetails();
@@ -36,7 +37,9 @@ export default function Home() {
   const [showManagePopup, setShowManagePopup] = useState(false);
   const [categories, setCategories] = useState<string[]>(categoriesFilter);
   const [showAddItemPopup, setShowAddItemPopup] = useState(false);
+  const [deletePopup, setDeletePopup] = useState(false);
   const [existingItem, setExistingItem] = useState<({item : MenuItem, index : number} | null)>(null);
+  const [itemToDelete, changeItemToDelete] = useState<number>(-1);
 
   const dropDownRefs = useRef<(HTMLDivElement| null)[]>([]);
   const inputRef = useRef<(HTMLInputElement | null)>(null);
@@ -189,7 +192,13 @@ export default function Home() {
     if (fnCode === 1) items.toggleAvailability(itemno);
     else if (fnCode === 2) {
       items.deleteItem(itemno);
-      changeSelectedItems(itemno);
+      setSelectItemsIndex(prev => {
+        let next = prev.filter(index => index != itemno);
+        console.log(next);
+        return next;
+      })
+      changeItemToDelete(-1);
+      setDeletePopup(false);
     }
     setCurrentItems(() => {
       let newItems: FoodItemStructure[];
@@ -282,6 +291,7 @@ export default function Home() {
     setSelectItemsIndex(prev => {
       newIndices = prev.includes(itemno) ? prev.filter(elem => elem != itemno) : [...prev, itemno];
       if (showOnlySelected) setCurrentItems(items.getSelectedData(newIndices));
+      console.log(newIndices);
       return newIndices;
     });
   }
@@ -340,6 +350,12 @@ export default function Home() {
     }
     setExistingItem({item : menuItem, index: item.itemno});
     setShowAddItemPopup(true);
+  }
+
+  const confirmDelete = (itemno : number) => {
+    setDeletePopup(true);
+    console.log(itemno);
+    changeItemToDelete(itemno);
   }
 
   return (
@@ -457,7 +473,7 @@ export default function Home() {
               ? 
               <div>
                 {Array.from({length: endElem - startElem + 1}, (e, index) => (
-                  <FoodItem data={currentItems[paginationValue * (page - 1) + index]} key = {paginationValue * (page - 1) + index} ordered={selectItemsIndex} changeSelectedItems={changeSelectedItems} dataEdit={editData}/>
+                  <FoodItem data={currentItems[paginationValue * (page - 1) + index]} key = {paginationValue * (page - 1) + index} ordered={selectItemsIndex} changeSelectedItems={changeSelectedItems} dataEdit={editData} confirmDelete={confirmDelete}/>
                 ))}
                 <div className="py-2 px-10 w-full flex items-center justify-between">
                   <div className="text-gray-500">
@@ -482,12 +498,9 @@ export default function Home() {
         </main>
       </div>
       {showManagePopup && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center">
+        <div className="fixed inset-0 z-20 flex items-center justify-center">
           {/* Translucent Background */}
-          <div
-            className="absolute inset-0 popup"
-            onClick={() => setShowManagePopup(false)}
-          ></div>
+          <div className="fixed inset-0 popup"></div>
 
           {/* Popup Box */}
           <ManageCategories 
@@ -499,13 +512,9 @@ export default function Home() {
         </div>
       )}
       {showAddItemPopup && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center">
+        <div className="fixed inset-0 z-20 flex items-center justify-center">
           {/* Translucent Background */}
-          <div
-            className="absolute inset-0 popup"
-            onClick={() => setShowManagePopup(false)}
-          >
-          </div>
+          <div className="fixed inset-0 popup"></div>
 
           {/* Popup Box */}
           <AddMenuItemForm
@@ -514,8 +523,16 @@ export default function Home() {
             onClose={() => {setShowAddItemPopup(false); setExistingItem(null);}}
             existingItem={existingItem != null ? existingItem.item : undefined}
           />
+
+          {/* Popup for confirmation */}
         </div>
       )}
+      { deletePopup && 
+        <div className="fixed inset-0 z-20 flex items-center justify-center">
+          <div className="fixed inset-0 popup"></div>
+          <ConfirmationPopup onConfirm={() => editData(2, itemToDelete)} onCancel={() => {setDeletePopup(false); changeItemToDelete(-1);}}/>
+        </div>
+      }
     </div>
   );
 }

@@ -241,11 +241,9 @@ const [ItemData, setItemData] = useState<MenuItem>(existingItem || initialState)
 
   return (         
     //Main JSX elements
-    <div className="fixed inset-0 flex items-center justify-center z-20 p-4">
-      <div className="fixed inset-0 popup"></div>
-      <div className="bg-white rounded-lg shadow-x h-[90vh] z-30 overflow-hidden flex flex-col px-6 py-6">
+      <div className="bg-white rounded-lg shadow-x h-[90vh] overflow-hidden z-30 justify-center items-center flex flex-col px-6 py-6">
         {/* Header with Title and X Button */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 flex-shrink-0">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-gray-200 w-full">
         {/*conditional rendering for the edit*/}
           <h2 className="text-xl font-medium text-gray-900">
                   {existingItem ? "Edit Menu Item" : "Add New Menu Item"}
@@ -630,7 +628,7 @@ const [ItemData, setItemData] = useState<MenuItem>(existingItem || initialState)
         </div>
 
         {/* Submit Buttons */}
-        <div className="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200 flex-shrink-0">
+        <div className="flex justify-end space-x-3 px-6 py-4 border-t border-gray-200 w-full">
           <button
           onClick={onClose}
           className="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
@@ -649,7 +647,6 @@ const [ItemData, setItemData] = useState<MenuItem>(existingItem || initialState)
         </div>
       
       </div>
-    </div>
   );
 };
 
