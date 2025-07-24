@@ -12,7 +12,7 @@ import { FoodItemStructure, FoodItemDetails } from "../../components/utils/FoodI
 import ManageCategories from "../../components/forms/ManageCategories";
 import { MenuItem } from "../../components/types/menuTypes";
 import AddMenuItemForm from "../../components/forms/AddItemForm";
-import ConfirmationPopup from "../../components/utils/ConfirmationPopup";
+import {ConfirmationPopup, DeleteBulkPopup} from "../../components/utils/ConfirmationPopup";
 
 
 const items = new FoodItemDetails();
@@ -38,6 +38,7 @@ export default function Home() {
   const [categories, setCategories] = useState<string[]>(categoriesFilter);
   const [showAddItemPopup, setShowAddItemPopup] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
+  const [bulkDeletePopup, setBulkDeletePopup] = useState(false);
   const [existingItem, setExistingItem] = useState<({item : MenuItem, index : number} | null)>(null);
   const [itemToDelete, changeItemToDelete] = useState<number>(-1);
 
@@ -212,9 +213,31 @@ export default function Home() {
   // To apply bulk actions
   const applyBulkAction = () =>{
     const select = bulkActions[selectedBulkAction];
-    if (select === "Mark as Available") items.toggleBulkAvailability(0, selectItemsIndex);
-    else if (select === "Mark as Unavailable") items.toggleBulkAvailability(1, selectItemsIndex);
-    else if (select === "Delete selected") items.deleteBulkItems(selectItemsIndex);
+    if (select.startsWith("Mark")){
+      if (select === "Mark as Available") items.toggleBulkAvailability(0, selectItemsIndex);
+      else if (select === "Mark as Unavailable") items.toggleBulkAvailability(1, selectItemsIndex);
+      setCurrentItems(() => {
+        let newItems :FoodItemStructure[];
+        if (searchParam === "") newItems = items.getFilterData(items.getData(),filters);
+        else newItems = items.getItemsBySearch(searchParam);
+        setNewPages(() => {
+          let newPages = Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems);
+          if (page > newPages){
+            setPage(newPages); 
+            setPageParam(`${newPages}`);
+          }
+          return newPages;
+        });
+        return newItems
+      });
+      setSelectItemsIndex([]);
+      setSelectedBulkAction(0);
+    }
+    else if (select === "Delete selected") setBulkDeletePopup(true);
+  } 
+
+  const deleteBulkItems = () => {
+    items.deleteBulkItems(selectItemsIndex);
     setCurrentItems(() => {
       let newItems :FoodItemStructure[];
       if (searchParam === "") newItems = items.getFilterData(items.getData(),filters);
@@ -231,7 +254,7 @@ export default function Home() {
     });
     setSelectItemsIndex([]);
     setSelectedBulkAction(0);
-  } 
+  }
 
   // To handle save categories
   const handleSaveCategories = (newCategories: { id: string, name: string }[]) => {
@@ -531,6 +554,12 @@ export default function Home() {
         <div className="fixed inset-0 z-20 flex items-center justify-center">
           <div className="fixed inset-0 popup"></div>
           <ConfirmationPopup onConfirm={() => editData(2, itemToDelete)} onCancel={() => {setDeletePopup(false); changeItemToDelete(-1);}}/>
+        </div>
+      }
+      {bulkDeletePopup &&
+        <div className="fixed inset-0 z-20 flex items-center justify-center">
+          <div className="fixed inset-0 popup"></div>
+          <DeleteBulkPopup onCancel={() => setBulkDeletePopup(false)} onConfirm={() => {deleteBulkItems();setBulkDeletePopup(false)}}/>
         </div>
       }
     </div>
