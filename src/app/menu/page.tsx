@@ -36,6 +36,7 @@ export default function Home() {
   const [showManagePopup, setShowManagePopup] = useState(false);
   const [categories, setCategories] = useState<string[]>(categoriesFilter);
   const [showAddItemPopup, setShowAddItemPopup] = useState(false);
+  const [existingItem, setExistingItem] = useState<({item : MenuItem, index : number} | null)>(null);
 
   const dropDownRefs = useRef<(HTMLDivElement| null)[]>([]);
   const inputRef = useRef<(HTMLInputElement | null)>(null);
@@ -181,11 +182,14 @@ export default function Home() {
   }
 
   // Editing individual item from actions
-  const editData = (fnCode: number, index: number) => {
-    if (fnCode === 1) items.toggleAvailability(index);
+  const editData = (fnCode: number, itemno: number) => {
+    if (fnCode === 0) {
+      handleEditItem(items.getItemByIndex(itemno));
+    }
+    if (fnCode === 1) items.toggleAvailability(itemno);
     else if (fnCode === 2) {
-      items.deleteItem(index);
-      changeSelectedItems(index);
+      items.deleteItem(itemno);
+      changeSelectedItems(itemno);
     }
     setCurrentItems(() => {
       let newItems: FoodItemStructure[];
@@ -246,7 +250,8 @@ export default function Home() {
   // To save new item
   const handleSaveItem = (item: MenuItem) => {
     console.log('Saved Item:', item);
-    items.addData(item);
+    existingItem === null ? items.addData(item) : items.updateData({item : item, index: existingItem.index});
+    setExistingItem(null);
     setCurrentItems(() => {
       let newItems = items.getData();
       if (searchParam === "") newItems = items.getFilterData(newItems, filters);
@@ -313,6 +318,28 @@ export default function Home() {
         if (element) element.scrollTop = 0;
       }
     }
+  }
+
+  const handleEditItem = (item : FoodItemStructure) =>{
+    let menuItem : MenuItem = {
+      itemName : item.itemname,
+      price: item.price,
+      discount: item.discount,
+      category: item.category,
+      itemImage: item.imgsrc,
+      itemType: item.type,
+      itemVideo : item.itemVideo,
+      spiceLevel: item.spiceLevel,
+      allergens: item.allergens,
+      isBestseller : item.status.includes("Bestseller"),
+      isTrending: item.status.includes("Trending"),
+      availability: item.status.includes("Available"),
+      description : item.itemdesc,
+      backstory: item.backstory,
+      ingredients: item.ingredients
+    }
+    setExistingItem({item : menuItem, index: item.itemno});
+    setShowAddItemPopup(true);
   }
 
   return (
@@ -484,7 +511,8 @@ export default function Home() {
           <AddMenuItemForm
             onSave={handleSaveItem}
             categories={items.categories}
-            onClose={() => setShowAddItemPopup(false)}
+            onClose={() => {setShowAddItemPopup(false); setExistingItem(null);}}
+            existingItem={existingItem != null ? existingItem.item : undefined}
           />
         </div>
       )}

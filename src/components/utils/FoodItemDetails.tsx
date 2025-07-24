@@ -11,6 +11,8 @@ export type FoodItemStructure = {
   price: number,
   discount: number,
   status: string[],
+  backstory: string,
+  ingredients: string,
   allergens: {
     hasNuts: boolean,
     hasDiary: boolean,
@@ -29,6 +31,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Appetizers",
     type: "Vegan",
     price: 3.25,
+    backstory: "",
+    ingredients: "",
     discount: 0.25,
     status: ["Available","Trending"],
     allergens: {
@@ -48,6 +52,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type : "Vegetarian",
     price: 14.99,
+    backstory: "",
+    ingredients: "",
     discount: 0,
     status: ["Available", "Bestseller"],
     allergens: {
@@ -67,6 +73,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Appetizers",
     type : "Non-Vegetarian",
     price: 10.29,
+    backstory: "",
+    ingredients: "",
     discount: 2,
     status: ["Available", "Trending"],
     allergens: {
@@ -86,6 +94,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Non-Vegetarian",
     price: 13.49,
+    backstory: "",
+    ingredients: "",
     discount: 2,
     status: ["Available"],
     allergens: {
@@ -105,6 +115,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Desserts",
     type: "Vegetarian",
     price: 4.5,
+    backstory: "",
+    ingredients: "",
     discount: 0.5,
     status: ["Available","Trending"],
     allergens: {
@@ -124,6 +136,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Beverages",
     type: "Vegetarian",
     price: 3.25,
+    backstory: "",
+    ingredients: "",
     discount: 0,
     status: ["Unavailable"],
     allergens: {
@@ -143,8 +157,10 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Appetizers",
     type: "Vegan",
     price: 6.75,
+    backstory: "",
+    ingredients: "",
     discount: 1,
-    status: ["Available","Bestsellers"],
+    status: ["Available","Bestseller"],
     allergens: {
       hasNuts: false,
       hasDiary: false,
@@ -162,6 +178,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Vegetarian",
     price: 11.25,
+    backstory: "",
+    ingredients: "",
     discount: 1.5,
     status: ["Unavailable"],
     allergens: {
@@ -181,8 +199,10 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Non-Vegetarian",
     price: 12.99,
+    backstory: "",
+    ingredients: "",
     discount: 2,
-    status:["Available","Bestsellers"],
+    status:["Available","Bestseller"],
     allergens: {
       hasNuts: false,
       hasDiary: false,
@@ -200,6 +220,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Desserts",
     type: "Vegetarian",
     price: 5.5,
+    backstory: "",
+    ingredients: "",
     discount: 0.75,
     status: ["Available"],
     allergens: {
@@ -219,6 +241,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Beverages",
     type: "Vegetarian",
     price: 4.25,
+    backstory: "",
+    ingredients: "",
     discount: 0.5,
     status: ["Available","Trending"],
     allergens: {
@@ -238,6 +262,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Vegan",
     price: 8.5,
+    backstory: "",
+    ingredients: "",
     discount: 1,
     status: ["Unavailable"],
     allergens: {
@@ -257,6 +283,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Jain",
     price: 7.75,
+    backstory: "",
+    ingredients: "",
     discount: 0.75,
     status: ["Available"],
     allergens: {
@@ -276,6 +304,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Appetizers",
     type: "Vegan",
     price: 2.99,
+    backstory: "",
+    ingredients: "",
     discount: 0,
     status: ["Available"],
     allergens: {
@@ -295,6 +325,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Vegetarian",
     price: 6.25,
+    backstory: "",
+    ingredients: "",
     discount: 0.5,
     status: ["Available","Trending"],
     allergens: {
@@ -314,6 +346,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Desserts",
     type: "Vegetarian",
     price: 3.5,
+    backstory: "",
+    ingredients: "",
     discount: 0.25,
     status: ["Available"],
     allergens: {
@@ -333,6 +367,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Appetizers",
     type: "Vegan",
     price: 4.75,
+    backstory: "",
+    ingredients: "",
     discount: 0.5,
     status: ["Available"],
     allergens: {
@@ -352,6 +388,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Jain",
     price: 5.99,
+    backstory: "",
+    ingredients: "",
     discount: 1,
     status: ["Available", "Trending"],
     allergens: {
@@ -371,6 +409,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Beverages",
     type: "Vegan",
     price: 3.75,
+    backstory: "",
+    ingredients: "",
     discount: 0,
     status: ["Available"],
     allergens: {
@@ -390,6 +430,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Main Course",
     type: "Vegetarian",
     price: 9.25,
+    backstory: "",
+    ingredients: "",
     discount: 1.25,
     status: ["Available"],
     allergens: {
@@ -409,6 +451,8 @@ const FoodItemData : FoodItemStructure[] = [
     category: "Desserts",
     type: "Vegetarian",
     price: 3.99,
+    backstory: "",
+    ingredients: "",
     discount: 0.5,
     status: ["Available"],
     allergens: {
@@ -432,7 +476,7 @@ export class FoodItemDetails{
   constructor(){
     this.data = FoodItemData;
     this.categories = ["Main Course", "Appetizers", "Desserts", "Beverages"];
-    this.status = ["Available", "Unavailable", "Bestsellers", "Trending"];
+    this.status = ["Available", "Unavailable", "Bestseller", "Trending"];
     this.types = ["Vegetarian","Non-Vegetarian", "Vegan", "Jain"];
     this.bulkActions = ["Delete selected", "Mark as Available", "Mark as Unavailable"];
   }
@@ -442,6 +486,10 @@ export class FoodItemDetails{
 
   getSelectedData(indices : number[]) : FoodItemStructure[]{
     return indices.map((value) => FoodItemData[value]);
+  }
+
+  getItemByIndex(itemno : number) : FoodItemStructure{
+    return this.data[itemno];
   }
 
   getFilterData(currentItems : FoodItemStructure[], filters: {category: string, status: string, type: string}) : FoodItemStructure[] {
@@ -483,16 +531,27 @@ export class FoodItemDetails{
 
   addData(item : MenuItem) : void{
     let newItem : FoodItemStructure = {
-      imgsrc : item.itemImage, itemVideo: item.itemVideo, itemdesc : item.description, itemname: item.itemName, itemno: this.data.length, status : [], type : item.itemType, category: item.category, price: item.price, discount: -1, spiceLevel: item.spiceLevel, 
+      imgsrc : item.itemImage, 
+      itemVideo: item.itemVideo, 
+      itemdesc : item.description, 
+      itemname: item.itemName, 
+      itemno: this.data.length, 
+      status : [], 
+      type : item.itemType, 
+      category: item.category, 
+      price: item.price, 
+      spiceLevel: item.spiceLevel, 
       allergens: {
         hasNuts : item.allergens.hasNuts,
         hasDiary : item.allergens.hasDiary,
         hasGluten : item.allergens. hasGluten,
-        hasSeaFood : item.allergens.hasSeafood
-      }
+        hasSeaFood : item.allergens.hasSeaFood
+      }, backstory : item.backstory, ingredients: item.ingredients,
+      discount : (item.discount === undefined) ? 0 : item.discount,
+  
     }; 
     newItem.discount = (item.discount === undefined) ? 0 : item.discount;
-    if (item.isBestseller != undefined && item.isBestseller) newItem.status.push("Bestsellers");
+    if (item.isBestseller != undefined && item.isBestseller) newItem.status.push("Bestseller");
     if (item.isTrending != undefined && item.isTrending) newItem.status.push("Trending");
     (item.availability) ? newItem.status.push("Available") : newItem.status.push("Unavailable");
     console.log(item, newItem);
@@ -503,5 +562,33 @@ export class FoodItemDetails{
     this.categories = categories;
     this.data = this.data.filter(item => categories.includes(item.category));
     console.log(this.categories, this.data);
+  }
+
+  updateData(existingItem : {item : MenuItem, index: number}) : void{
+    const {item, index} = existingItem;
+    let newItem : FoodItemStructure = {
+      imgsrc : item.itemImage, 
+      itemVideo: item.itemVideo, 
+      itemdesc : item.description, 
+      itemname: item.itemName, 
+      itemno: index, 
+      status : [], 
+      type : item.itemType, 
+      category: item.category, 
+      price: item.price, 
+      spiceLevel: item.spiceLevel, 
+      allergens: {
+        hasNuts : item.allergens.hasNuts,
+        hasDiary : item.allergens.hasDiary,
+        hasGluten : item.allergens. hasGluten,
+        hasSeaFood : item.allergens.hasSeaFood
+      }, backstory : item.backstory, ingredients: item.ingredients,
+      discount : (item.discount === undefined) ? 0 : item.discount,
+    }; 
+    newItem.discount = (item.discount === undefined) ? 0 : item.discount;
+    if (item.isBestseller != undefined && item.isBestseller) newItem.status.push("Bestseller");
+    if (item.isTrending != undefined && item.isTrending) newItem.status.push("Trending");
+    (item.availability) ? newItem.status.push("Available") : newItem.status.push("Unavailable");
+    this.data[index] = newItem;
   }
 }

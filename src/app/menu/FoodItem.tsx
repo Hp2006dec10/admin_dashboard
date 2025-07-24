@@ -47,7 +47,7 @@ export default function FoodItem({data, ordered, changeSelectedItems, dataEdit} 
       </div>
       
       <div className="w-1/10 flex items-center justify-start gap-5">
-        <FontAwesomeIcon icon={faPenToSquare} className="text-blue-800 cursor-pointer"></FontAwesomeIcon>
+        <FontAwesomeIcon icon={faPenToSquare} className="text-blue-800 cursor-pointer" onClick={() => dataEdit(0, itemno)}></FontAwesomeIcon>
         <FontAwesomeIcon icon={!status.includes("Unavailable")? faToggleOn : faToggleOff} className="text-gray-800 cursor-pointer" onClick={()=> dataEdit(1, itemno)}></FontAwesomeIcon>
         <FontAwesomeIcon icon={faTrash} className="text-red-600 cursor-pointer" onClick={()=> dataEdit(2, itemno)}></FontAwesomeIcon>
       </div>

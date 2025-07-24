@@ -2,8 +2,6 @@
 Name:Siva Jeyanth
 */
 
-import { FoodItemDetails } from "../utils/FoodItemDetails";
-
 //This file Contains the all the attributes and its types used in the form
 export interface MenuItem {
   itemName: string;
@@ -21,7 +19,7 @@ export interface MenuItem {
   allergens:{
   hasNuts:boolean;
   hasDiary:boolean;
-  hasSeafood:boolean;
+  hasSeaFood:boolean;
   hasGluten:boolean;
   //[key: string]: boolean; //using this so that we can dynamically access the allergens
   }

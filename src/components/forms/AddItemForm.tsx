@@ -30,7 +30,7 @@ const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, o
     allergens:{
         hasNuts:false,
         hasDiary:false,
-        hasSeafood:false,
+        hasSeaFood:false,
         hasGluten:false
     },
     spiceLevel:"Mild",
@@ -576,8 +576,8 @@ const [ItemData, setItemData] = useState<MenuItem>(existingItem || initialState)
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="checkbox"
-                    name="hasSeafood"
-                    checked={ItemData.allergens?.hasSeafood}
+                    name="hasSeaFood"
+                    checked={ItemData.allergens?.hasSeaFood}
                     onChange={handleAllergens}
                   className="w-4 h-4 accent-[#463ee4] text-[#463ee4] border-gray-400 rounded focus:ring-[#463ee4]"
                   />
