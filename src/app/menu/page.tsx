@@ -14,10 +14,9 @@ import { MenuItem } from "../../components/types/menuTypes";
 import AddMenuItemForm from "../../components/forms/AddItemForm";
 import {ConfirmationPopup, DeleteBulkPopup} from "../../components/utils/ConfirmationPopup";
 
-
-const items = new FoodItemDetails();
-const status = ["All Items",...items.status], types = ["All Types", ...items.types];
-const bulkActions = items.bulkActions, categoriesFilter = ["All Categories", ...items.categories];
+const items = new FoodItemDetails()
+const status = ["All Items", ...items.status], types : string[] = ["All Types", ...items.types];
+let bulkActions : string[] = items.bulkActions, categoriesFilter : string[] = ["All Categories",...items.categories];
 
 export default function Home() {
 
@@ -54,11 +53,10 @@ export default function Home() {
   const shouldAddExtra = (newItems : FoodItemStructure[]) => 
     (newItems.length/paginationValue === Math.floor(newItems.length/paginationValue) ? 0 : 1)
 
-  // Function to check if all the display items are selected
-  const checkAllSelected = () => {
-    let cnd = currentItems.every(item => selectItemsIndex.includes(item.itemno))
-    return cnd;
-  }
+  // Function to check if all the display items are selected 
+  //subject to change
+  const checkAllSelected = () =>
+    currentItems.every(item => selectItemsIndex.includes(item.itemno))
 
   // Page change when all items in the page are deleted
   useEffect(() => {
@@ -128,19 +126,21 @@ export default function Home() {
     })
 
   // To get items based on search
+  //subject to change
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") { 
       let newItems : FoodItemStructure[] = items.getItemsBySearch(searchParam);
       if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
       setCurrentItems(newItems);
       setNewPages(Math.floor(newItems.length/paginationValue) +shouldAddExtra(newItems));
-      setFilters({category: "All Categories", status: "All Items", type: "All Types", });
+      setFilters({category: "All Categories", status: "All Items", type: "All Types" });
       setPage(1);
       setPageParam("1");
     }
   }
 
   // To get filtered data
+  //subject to change
   const handleFilterChange = (key: string, value: string, index:number) => {
     let newFilter, newItems : FoodItemStructure[];
     setFilters(prev => {
@@ -157,8 +157,9 @@ export default function Home() {
   }
 
   // To remove all the filters 
+  //subject to change
   const removeFilter = () => {
-    setFilters({category: "All Categories", status: "All Items", type: "All Types"})
+    setFilters({category: "All Categories", status: "All items", type: "All Types"})
     setCurrentItems(() => {
       let newItems = items.getData();
       if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
@@ -170,6 +171,7 @@ export default function Home() {
   }
 
   //Toggle between all data and selected data
+  //subject to change
   const showOnlySelectedData = () => {
     let newItems : FoodItemStructure[];
     if(searchParam === "") newItems = items.getFilterData((!showOnlySelected) ? items.getSelectedData(selectItemsIndex)
@@ -186,10 +188,9 @@ export default function Home() {
   }
 
   // Editing individual item from actions
+  //subject to change
   const editData = (fnCode: number, itemno: number) => {
-    if (fnCode === 0) {
-      handleEditItem(items.getItemByIndex(itemno));
-    }
+    if (fnCode === 0) handleEditItem(items.getItemByIndex(itemno));
     if (fnCode === 1) items.toggleAvailability(itemno);
     else if (fnCode === 2) {
       items.deleteItem(itemno);
@@ -211,9 +212,11 @@ export default function Home() {
   }
   
   // To apply bulk actions
+  //subject to change
   const applyBulkAction = () =>{
     const select = bulkActions[selectedBulkAction];
-    if (select.startsWith("Mark")){
+    if (select === "Delete selected") setBulkDeletePopup(true);
+    else {
       if (select === "Mark as Available") items.toggleBulkAvailability(0, selectItemsIndex);
       else if (select === "Mark as Unavailable") items.toggleBulkAvailability(1, selectItemsIndex);
       setCurrentItems(() => {
@@ -233,9 +236,16 @@ export default function Home() {
       setSelectItemsIndex([]);
       setSelectedBulkAction(0);
     }
-    else if (select === "Delete selected") setBulkDeletePopup(true);
   } 
 
+  //subject to change
+  const confirmDelete = (itemno : number) => {
+    setDeletePopup(true);
+    console.log(itemno);
+    changeItemToDelete(itemno);
+  }
+
+  //subject to change
   const deleteBulkItems = () => {
     items.deleteBulkItems(selectItemsIndex);
     setCurrentItems(() => {
@@ -257,6 +267,7 @@ export default function Home() {
   }
 
   // To handle save categories
+  //subject to change
   const handleSaveCategories = (newCategories: { id: string, name: string }[]) => {
     setCategories(() => {
       let editedCategories = newCategories.map(cat => cat.name);
@@ -280,6 +291,7 @@ export default function Home() {
   };
 
   // To save new item
+  //subject to change
   const handleSaveItem = (item: MenuItem) => {
     console.log('Saved Item:', item);
     existingItem === null ? items.addData(item) : items.updateData({item : item, index: existingItem.index});
@@ -294,8 +306,32 @@ export default function Home() {
     })
     setShowAddItemPopup(false);
   }
+
+  //subject to change
+  const handleEditItem = (item : FoodItemStructure) =>{
+    let menuItem : MenuItem = {
+      itemName : item.itemname,
+      price: item.price,
+      discount: item.discount,
+      category: item.category,
+      itemImage: item.imgsrc,
+      itemType: item.type,
+      itemVideo : item.itemVideo,
+      spiceLevel: item.spiceLevel,
+      allergens: item.allergens,
+      isBestseller : item.status.includes("Bestseller"),
+      isTrending: item.status.includes("Trending"),
+      availability: item.status.includes("Available"),
+      description : item.itemdesc,
+      backstory: item.backstory,
+      ingredients: item.ingredients
+    }
+    setExistingItem({item : menuItem, index: item.itemno});
+    setShowAddItemPopup(true);
+  }
   
   // Toggling the select all
+  //aubject to change
   const toggleSelectAll = () => 
     (currentItems.length > 0 && checkAllSelected()) ? 
     setSelectItemsIndex((prev) => {
@@ -309,6 +345,7 @@ export default function Home() {
     setSelectItemsIndex(currentItems.map(item => item.itemno));
 
   // Handling selected items
+  //subject to change
   const changeSelectedItems = (itemno: number) =>{
     let newIndices;
     setSelectItemsIndex(prev => {
@@ -351,34 +388,6 @@ export default function Home() {
         if (element) element.scrollTop = 0;
       }
     }
-  }
-
-  const handleEditItem = (item : FoodItemStructure) =>{
-    let menuItem : MenuItem = {
-      itemName : item.itemname,
-      price: item.price,
-      discount: item.discount,
-      category: item.category,
-      itemImage: item.imgsrc,
-      itemType: item.type,
-      itemVideo : item.itemVideo,
-      spiceLevel: item.spiceLevel,
-      allergens: item.allergens,
-      isBestseller : item.status.includes("Bestseller"),
-      isTrending: item.status.includes("Trending"),
-      availability: item.status.includes("Available"),
-      description : item.itemdesc,
-      backstory: item.backstory,
-      ingredients: item.ingredients
-    }
-    setExistingItem({item : menuItem, index: item.itemno});
-    setShowAddItemPopup(true);
-  }
-
-  const confirmDelete = (itemno : number) => {
-    setDeletePopup(true);
-    console.log(itemno);
-    changeItemToDelete(itemno);
   }
 
   return (

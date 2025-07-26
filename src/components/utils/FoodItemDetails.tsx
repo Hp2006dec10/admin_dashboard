@@ -1,4 +1,7 @@
+import { fooditem } from "../types/fooditem";
 import { MenuItem } from "../types/menuTypes";
+import { db } from "../../../firebase";
+import { getDocs, collection, doc } from "firebase/firestore";
 
 export type FoodItemStructure = {
   itemno:  number,
@@ -468,6 +471,7 @@ const FoodItemData : FoodItemStructure[] = [
 
 export class FoodItemDetails{
   data: FoodItemStructure[];
+  dbdata : fooditem[] = [];
   categories : string[];
   status : string[];
   types : string[];
@@ -475,11 +479,80 @@ export class FoodItemDetails{
   
   constructor(){
     this.data = FoodItemData;
+    this.dbdata = [];
     this.categories = ["Main Course", "Appetizers", "Desserts", "Beverages"];
     this.status = ["Available", "Unavailable", "Bestseller", "Trending"];
     this.types = ["Vegetarian","Non-Vegetarian", "Vegan", "Jain"];
     this.bulkActions = ["Delete selected", "Mark as Available", "Mark as Unavailable"];
   }
+
+  getDataModified() : fooditem[] {
+    return this.dbdata;
+  }
+
+  getSelectedDataModified(ids : string[]) : fooditem[]{
+    let selecteditems = this.dbdata.filter(menuitem => ids.includes(menuitem.id));
+    console.log(selecteditems);
+    return selecteditems;
+  }
+
+  getItemByIndexModified(id: string) : fooditem | null{
+    return this.dbdata.find(menuitem => menuitem.id === id) || null;
+  }
+
+  getFilterDataModified(currentItems : fooditem[], filters: {category: string, status: string, type: string}) : fooditem[]{
+    const {category, status, type} = filters;
+    let newItems : fooditem[] = currentItems;
+    if (category != "All Categories") newItems = newItems.filter(elem => elem.dish_type === category);
+    if (status === "Available") newItems = newItems.filter(elem => elem.available);
+    else if (status === "Unavailable") newItems = newItems.filter(elem => !elem.available);
+    else if (status === "Bestseller") newItems = newItems.filter(elem => elem.is_best_seller);
+    if (type != "All Types") newItems = newItems.filter(elem => elem.diet === type);
+    return newItems;
+  }
+
+  getItemsBySearchModified(searchParam: string) : fooditem[]{
+    let newItems : fooditem[] = this.dbdata.filter(item => new RegExp(searchParam, "i").test(item.name));
+    return newItems;
+  }
+
+  toggleAvailabilityModified(id: string) : void{
+    this.dbdata = this.dbdata.map(menuitem => {
+      if (menuitem.id === id){
+        menuitem.available = !menuitem.available;
+      }
+      return menuitem;
+    })   
+  }
+
+  toggleBulkAvailabilityModified(opCode: number, selectedIDs: string[]) : void{
+    if (opCode === 0){
+      this.dbdata = this.dbdata.map(menuitem => {
+        menuitem.available = selectedIDs.includes(menuitem.id) ? true : menuitem.available;
+        return menuitem; 
+      })
+    }
+    else{
+      this.dbdata = this.dbdata.map(menuitem => {
+        menuitem.available = selectedIDs.includes(menuitem.id) ? false : menuitem.available;
+        return menuitem; 
+      })
+    }
+  }
+
+  deleteItemModified(id: string){
+    this.dbdata = this.dbdata.filter(menuitem => menuitem.id != id);
+  }
+
+  deleteBulkItemsModified(selectedIDs: string[]){
+    this.dbdata = this.dbdata.filter(menuitem => !selectedIDs.includes(menuitem.id));
+  }
+
+  applyNewCategoriesModified(categories: string[]){
+    this.categories = categories;
+    this.dbdata = this.dbdata.filter(menuitem => categories.includes(menuitem.dish_type));
+  }
+
   getData() : FoodItemStructure[] {
     return this.data;
   }
@@ -525,6 +598,7 @@ export class FoodItemDetails{
   deleteItem(index: number) : void{
     this.data = this.data.filter(item => item.itemno != index);
   }
+
   deleteBulkItems(selectItemsIndex: number[]) : void {
     this.data = this.data.filter(item => !selectItemsIndex.includes(item.itemno))
   }
@@ -591,4 +665,47 @@ export class FoodItemDetails{
     (item.availability) ? newItem.status.push("Available") : newItem.status.push("Unavailable");
     this.data[index] = newItem;
   }
+}
+
+async function getDocuments() : Promise<fooditem[]>{
+  const docRef = collection(db, "restaurants","bbq_in","menu");
+  const docSnapShot = await getDocs(docRef);
+  let docs : fooditem[] = [];
+  docSnapShot.docs.forEach(doc => {
+    const data = doc.data();
+    const item : fooditem = {
+      id: doc.id, 
+      allergens: data.allergens,
+      available: data.available,
+      available_time: data.available_time,
+      calories: data.calories,
+      carbs: data.carbs,
+      combo_items: data.combo_items,
+      cooking_method: data.cooking_method,
+      cuisine: data.cuisine,
+      description: data.description,
+      diet: data.diet,
+      dish_type: data.dish_type,
+      fat: data.fat,
+      flavor_tags: data.flavor_tags,
+      image_url: data.image_url,
+      ingredients: data.ingredients,
+      is_best_seller: data.is_best_seller,
+      meal_type: data.meal_type,
+      name: data.name,
+      occasion: data.occasion,
+      pairs_well_with: data.pairs_well_with,
+      portion_size: data.portion_size,
+      prep_time: data.prep_time,
+      price: data.price,
+      protein: data.protein,
+      rating: data.rating,
+      review_count: data.review_count,
+      serves:data.serves,
+      spice_level: data.spice_level,
+      taste_profile: data.taste_profile
+    }
+    docs.push(item);
+  })
+  return docs;
 }
