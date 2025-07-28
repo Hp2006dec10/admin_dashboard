@@ -8,7 +8,7 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons/faXmark";
 import FoodItem from "./FoodItem";
 import FilterButton from "./FilterButton";
 import Image from "next/image";
-import {FoodItemDetails } from "../../components/utils/FoodItemDetails";
+import { FoodItemStructure, FoodItemDetails } from "../../components/utils/FoodItemDetails";
 import ManageCategories from "../../components/forms/ManageCategories";
 import { MenuItem } from "../../components/types/menuTypes";
 import AddMenuItemForm from "../../components/forms/AddItemForm";
@@ -18,32 +18,30 @@ import { db } from "../../../firebase";
 import { fooditem } from "@/components/types/fooditem";
 
 const items = new FoodItemDetails()
-let status = ["All Items", ...items.status];
-let bulkActions : string[] = items.bulkActions;
+let status = ["All Items", ...FoodItemDetails.status], types : string[] = ["All Types", ...FoodItemDetails.types];
+let bulkActions : string[] = FoodItemDetails.bulkActions, categoriesFilter : string[] = ["All Categories",...FoodItemDetails.categories];
 
 export default function Home() {
-  const [currentItems, setCurrentItems] = useState<fooditem[]>([]);
+
+  const [currentItems, setCurrentItems] = useState<FoodItemStructure[]>([]);
   const [page, setPage] = useState(1);
   const [pageParam, setPageParam] = useState("1");
   const [paginationValue, setPaginationValue] = useState(5);
-  
   const [isPaginationClicked, setIsPaginationClicked] = useState(false);
   const [openStates, setOpenStates] = useState<boolean[]>([false]);
-  const [isBulkActionSelected, setIsBulkActionSelected] = useState<boolean>(false);
- 
   const [filters, setFilters] = useState({category: "All Categories", status: "All Items", type: "All Types"})
   const [searchParam, setNewSearchParam] = useState<string>("");
-  const [selectItemsIndex, setSelectItemsIndex] = useState<string[]>([]);
+  const [selectItemsIndex, setSelectItemsIndex] = useState<number[]>([]);
   const [showOnlySelected, setShowOnlySelected] = useState(false);
+  const [isBulkActionSelected, setIsBulkActionSelected] = useState<boolean>(false);
   const [selectedBulkAction, setSelectedBulkAction] = useState(0);
-
+  const [showManagePopup, setShowManagePopup] = useState(false);
+  const [categories, setCategories] = useState<string[]>(categoriesFilter);
   const [showAddItemPopup, setShowAddItemPopup] = useState(false);
   const [deletePopup, setDeletePopup] = useState(false);
   const [bulkDeletePopup, setBulkDeletePopup] = useState(false);
-  const [showManagePopup, setShowManagePopup] = useState(false);
-
   const [existingItem, setExistingItem] = useState<({item : MenuItem, index : number} | null)>(null);
-  const [itemToDelete, changeItemToDelete] = useState<string>("");
+  const [itemToDelete, changeItemToDelete] = useState<number>(-1);
 
   const dropDownRefs = useRef<(HTMLDivElement| null)[]>([]);
   const inputRef = useRef<(HTMLInputElement | null)>(null);
@@ -53,27 +51,23 @@ export default function Home() {
   const startElem = currentItems.length == 0 ? 0 : paginationValue * (page - 1) + 1;
   const endElem = currentItems.length === 0 ? 0 : paginationValue * (page - 1) + Math.min(paginationValue, Math.abs(currentItems.length - (paginationValue * (page - 1))));
   const maxPage = Math.floor(currentItems.length/paginationValue) + (currentItems.length/paginationValue === Math.floor(currentItems.length/paginationValue) ? 0 : 1);
-  const types : string[] = ["All Types", ...items.types];
-  const testCategories = ["All Categories", ...items.categories];
+
+  // Function to check page addition parameter
+  const shouldAddExtra = (newItems : FoodItemStructure[]) => 
+    (newItems.length/paginationValue === Math.floor(newItems.length/paginationValue) ? 0 : 1)
   
   // Function to check if all the display items are selected 
+  //subject to change
   const checkAllSelected = () =>
-    currentItems.every(item => selectItemsIndex.includes(item.id))  
+    currentItems.every(item => selectItemsIndex.includes(item.itemno))
 
-  useEffect(() => {
-    console.log(testCategories);
-  })
-
-  // To get data from the database
   useEffect(() => {
     const getDocuments = async () => {
       const docRef = collection(db, "restaurants","bbq_in","menu");
       const docSnapShot = await getDocs(docRef);
-      let docs : fooditem[] = [], categories : string[] = [], types : string[] = [];
+      let docs : fooditem[] = [];
       docSnapShot.docs.forEach(doc => {
         const data = doc.data();
-        if (!categories.includes(data.dish_type)) categories.push(data.dish_type);
-        if (!types.includes(data.diet)) types.push(data.diet);
         const item : fooditem = {
           id: doc.id, 
           allergens: data.allergens,
@@ -108,17 +102,26 @@ export default function Home() {
         }
         docs.push(item);
       })
-      items.setDBdata(docs, categories, types);
-      setCurrentItems(items.getData());
+      console.log("Before update",docs);
+      items.setDBdata(docs);
+      console.log(items.getItemsBySearchModified("p"));
     }
     getDocuments();
+    setCurrentItems(items.getData());
     setPage(1);
   }, [])
 
   // Page change when All items in the page are deleted
   useEffect(() => {
-    if (startElem > endElem) handlePageChange(-1);
+    if (startElem > endElem) {
+      handlePageChange(-1);
+    }
   },[currentItems])
+
+  useEffect(() => {
+    console.log(currentItems.length);
+    console.log(startElem, endElem);
+  })
 
   //To register the handle click outside functions for the filter dropdowns
   useEffect(() => {
@@ -180,18 +183,22 @@ export default function Home() {
     })
 
   // To get items based on search
+  //subject to change
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      let newItems : fooditem[] = items.getItemsBySearch(searchParam);
-      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.id));
+    if (e.key === "Enter") { 
+      let newItems : FoodItemStructure[] = items.getItemsBySearch(searchParam);
+      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
       setCurrentItems(newItems);
       setFilters({category: "All Categories", status: "All Items", type: "All Types" });
       setPage(1);
       setPageParam("1");
+    }
   }
 
   // To get filtered data
+  //subject to change
   const handleFilterChange = (key: string, value: string, index:number) => {
-    let newFilter, newItems : fooditem[];
+    let newFilter, newItems : FoodItemStructure[];
     setFilters(prev => {
       newFilter = {...prev, [key]:value};
       newItems = items.getFilterData(showOnlySelected ? items.getSelectedData(selectItemsIndex) : items.getData(), newFilter);
@@ -205,73 +212,51 @@ export default function Home() {
   }
 
   // To remove all the filters 
+  //subject to change
   const removeFilter = () => {
     setFilters({category: "All Categories", status: "All Items", type: "All Types"})
     setCurrentItems(() => {
       let newItems = items.getData();
-      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.id));
+      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
       return newItems;
     });
     setPage(1);
     setPageParam("1");
   }
 
-  // Handling selected items
-  const changeSelectedItems = (id: string) =>{
-    let newIndices;
-    setSelectItemsIndex(prev => {
-      newIndices = prev.includes(id) ? prev.filter(elem => elem != id) : [...prev, id];
-      if (showOnlySelected) setCurrentItems(items.getSelectedData(newIndices));
-      console.log(newIndices);
-      return newIndices;
-    });
-  }
-
   //Toggle between all data and selected data
+  //subject to change
   const showOnlySelectedData = () => {
-    let newItems : fooditem[];
+    let newItems : FoodItemStructure[];
     if(searchParam === "") newItems = items.getFilterData((!showOnlySelected) ? items.getSelectedData(selectItemsIndex)
     : items.getData(), filters);
     else {
       newItems = items.getItemsBySearch(searchParam);
-      if (!showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.id)); 
+      if (!showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno)); 
     }
     setCurrentItems(newItems);
     setPage(1);
     setPageParam("1");
     setShowOnlySelected(prev => !prev);
-    console.log("click ok")
   }
 
-  // Toggling the select all
-  const toggleSelectAll = () => 
-    (currentItems.length > 0 && checkAllSelected()) ? 
-    setSelectItemsIndex((prev) => {
-      let oldIndex : string[] = [], oldItems : string[] = [];
-      currentItems.forEach(item => {
-        if (selectItemsIndex.includes(item.id)) {oldIndex.push(item.id); oldItems.push(item.name)}; 
-      })
-      let newIndex = prev.filter(index => !oldIndex.includes(index));
-      return newIndex;
-    }) : 
-    setSelectItemsIndex(currentItems.map(item => item.id));
-
   // Editing individual item from actions
-  const editData = (fnCode: number, id: string) => {
-    // if (fnCode === 0) handleEditItem(items.getItemByIndex(itemno));
-    if (fnCode === 1) items.toggleAvailability(id);
+  //subject to change
+  const editData = (fnCode: number, itemno: number) => {
+    if (fnCode === 0) handleEditItem(items.getItemByIndex(itemno));
+    if (fnCode === 1) items.toggleAvailability(itemno);
     else if (fnCode === 2) {
-      items.deleteItem(id);
+      items.deleteItem(itemno);
       setSelectItemsIndex(prev => {
-        let next = prev.filter(index => index != id);
+        let next = prev.filter(index => index != itemno);
         console.log(next);
         return next;
       })
-      changeItemToDelete("");
+      changeItemToDelete(-1);
       setDeletePopup(false);
     }
     setCurrentItems(() => {
-      let newItems: fooditem[];
+      let newItems: FoodItemStructure[];
       if (searchParam === "") newItems = items.getFilterData(items.getData(), filters);
       else newItems = items.getItemsBySearch(searchParam);
       return newItems;
@@ -279,6 +264,7 @@ export default function Home() {
   }
   
   // To apply bulk actions
+  //subject to change
   const applyBulkAction = () =>{
     const select = bulkActions[selectedBulkAction];
     if (select === "Delete selected") setBulkDeletePopup(true);
@@ -286,10 +272,18 @@ export default function Home() {
       if (select === "Mark as Available") items.toggleBulkAvailability(0, selectItemsIndex);
       else if (select === "Mark as Unavailable") items.toggleBulkAvailability(1, selectItemsIndex);
       setCurrentItems(() => {
-        let newItems : fooditem[];
+        let newItems :FoodItemStructure[];
         if (searchParam === "") newItems = items.getFilterData(items.getData(),filters);
         else newItems = items.getItemsBySearch(searchParam);
-        let newPages = Math.floor(newItems.length/paginationValue) + (newItems.length/paginationValue === Math.floor(newItems.length/paginationValue) ? 0 : 1);
+        // setNewPages(() => {
+        //   let newPages = Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems);
+        //   if (page > newPages){
+        //     setPage(newPages); 
+        //     setPageParam(`${newPages}`);
+        //   }
+        //   return newPages;
+        // });
+        let newPages = Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems);
         if (page > newPages){
           setPage(newPages); 
           setPageParam(`${newPages}`);
@@ -299,29 +293,36 @@ export default function Home() {
       setSelectItemsIndex([]);
       setSelectedBulkAction(0);
     }
-    console.log("click ok")
   } 
 
-  // Showing the pop-up for deletion
-  const confirmDelete = (id : string) => {
+  //subject to change
+  const confirmDelete = (itemno : number) => {
     setDeletePopup(true);
-    console.log(id);
-    changeItemToDelete(id);
+    console.log(itemno);
+    changeItemToDelete(itemno);
   }
 
-  // Deleting bulk items after confirmation
+  //subject to change
   const deleteBulkItems = () => {
     items.deleteBulkItems(selectItemsIndex);
     setCurrentItems(() => {
-      let newItems : fooditem[];
+      let newItems :FoodItemStructure[];
       if (searchParam === "") newItems = items.getFilterData(items.getData(),filters);
       else newItems = items.getItemsBySearch(searchParam);
-      let newPages = Math.floor(newItems.length/paginationValue) + (newItems.length/paginationValue === Math.floor(newItems.length/paginationValue) ? 0 : 1);
+      // setNewPages(() => {
+      //   let newPages = Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems);
+      //   if (page > newPages){
+      //     setPage(newPages); 
+      //     setPageParam(`${newPages}`);
+      //   }
+      //   return newPages;
+      // });
+      let newPages = Math.floor(newItems.length/paginationValue) + shouldAddExtra(newItems);
       if (page > newPages){
         setPage(newPages); 
         setPageParam(`${newPages}`);
       }
-      setPage(1);
+      //setPage(1);
       return newItems
     });
     setSelectItemsIndex([]);
@@ -329,65 +330,93 @@ export default function Home() {
   }
 
   // To handle save categories
+  //subject to change
   const handleSaveCategories = (newCategories: { id: string, name: string }[]) => {
-    items.applyNewCategories(newCategories.map(cat => cat.name));
+    setCategories(() => {
+      let editedCategories = newCategories.map(cat => cat.name);
+      items.applyNewCategories(editedCategories);
+      return ["All Categories",...editedCategories];
+    });
     setFilters(prev => {
       let newFilters = {category: "All Categories", status: prev.status, type: prev.type};
       setCurrentItems(() => {
         let newItems = items.getData();
         if (searchParam === "") newItems = items.getFilterData(newItems, newFilters);
         else newItems = items.getItemsBySearch(searchParam);
-        if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.id));
+        if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
         return newItems;
       })
       return newFilters;
     })
     
     setShowManagePopup(false);
-    console.log("click ok")
   };
 
-  // Editing item
-  //subject to change
-  // const handleEditItem = (item : FoodItemStructure) =>{
-    // let menuItem : MenuItem = {
-    //   itemName : item.itemname,
-    //   price: item.price,
-    //   discount: item.discount,
-    //   category: item.category,
-    //   itemImage: item.imgsrc,
-    //   itemType: item.type,
-    //   itemVideo : item.itemVideo,
-    //   spiceLevel: item.spiceLevel,
-    //   allergens: item.allergens,
-    //   isBestseller : item.status.includes("Bestseller"),
-    //   isTrending: item.status.includes("Trending"),
-    //   availability: item.status.includes("Available"),
-    //   description : item.itemdesc,
-    //   backstory: item.backstory,
-    //   ingredients: item.ingredients
-    // }
-    // setExistingItem({item : menuItem, index: item.itemno});
-    // setShowAddItemPopup(true);
-    // console.log("click ok")
-  // }
-  
   // To save new item
   //subject to change
-  const addNewItem = (item: MenuItem) => {
-    // console.log('Saved Item:', item);
-    // existingItem === null ? items.addData(item) : items.updateData({item : item, index: existingItem.index});
-    // setExistingItem(null);
-    // setCurrentItems(() => {
-    //   let newItems = items.getData();
-    //   if (searchParam === "") newItems = items.getFilterData(newItems, filters);
-    //   else newItems = items.getItemsBySearch(searchParam);
-    //   if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
-    //   return newItems;
-    // })
-    // setShowAddItemPopup(false);
-    console.log("click ok")
+  const handleSaveItem = (item: MenuItem) => {
+    console.log('Saved Item:', item);
+    existingItem === null ? items.addData(item) : items.updateData({item : item, index: existingItem.index});
+    setExistingItem(null);
+    setCurrentItems(() => {
+      let newItems = items.getData();
+      if (searchParam === "") newItems = items.getFilterData(newItems, filters);
+      else newItems = items.getItemsBySearch(searchParam);
+      if (showOnlySelected) newItems = newItems.filter(item => selectItemsIndex.includes(item.itemno));
+      return newItems;
+    })
+    setShowAddItemPopup(false);
   }
+
+  //subject to change
+  const handleEditItem = (item : FoodItemStructure) =>{
+    let menuItem : MenuItem = {
+      itemName : item.itemname,
+      price: item.price,
+      discount: item.discount,
+      category: item.category,
+      itemImage: item.imgsrc,
+      itemType: item.type,
+      itemVideo : item.itemVideo,
+      spiceLevel: item.spiceLevel,
+      allergens: item.allergens,
+      isBestseller : item.status.includes("Bestseller"),
+      isTrending: item.status.includes("Trending"),
+      availability: item.status.includes("Available"),
+      description : item.itemdesc,
+      backstory: item.backstory,
+      ingredients: item.ingredients
+    }
+    setExistingItem({item : menuItem, index: item.itemno});
+    setShowAddItemPopup(true);
+  }
+  
+  // Toggling the select all
+  //aubject to change
+  const toggleSelectAll = () => 
+    (currentItems.length > 0 && checkAllSelected()) ? 
+    setSelectItemsIndex((prev) => {
+      let oldIndex : number[] = [], oldItems : string[] = [];
+      currentItems.forEach(item => {
+        if (selectItemsIndex.includes(item.itemno)) {oldIndex.push(item.itemno); oldItems.push(item.itemname)}; 
+      })
+      let newIndex = prev.filter(index => !oldIndex.includes(index));
+      return newIndex;
+    }) : 
+    setSelectItemsIndex(currentItems.map(item => item.itemno));
+
+  // Handling selected items
+  //subject to change
+  const changeSelectedItems = (itemno: number) =>{
+    let newIndices;
+    setSelectItemsIndex(prev => {
+      newIndices = prev.includes(itemno) ? prev.filter(elem => elem != itemno) : [...prev, itemno];
+      if (showOnlySelected) setCurrentItems(items.getSelectedData(newIndices));
+      console.log(newIndices);
+      return newIndices;
+    });
+  }
+
  
   // To change pagination value
   const changePagination = (value : number) => {
@@ -417,6 +446,11 @@ export default function Home() {
         if (element) element.scrollTop = 0;
       }
     }
+  }
+
+  const cancelSelection = () => {
+    setSelectItemsIndex([]);
+    if (showOnlySelected) setCurrentItems([]);
   }
 
   return (
@@ -451,10 +485,10 @@ export default function Home() {
                 {/* Filter by search */}
                 <div className="border-1 border-[rgba(0,0,0,0.1)] px-2 py-2 rounded-[5px]">
                   <FontAwesomeIcon icon={faSearch} className="text-gray-400 px-2"></FontAwesomeIcon>
-                  <input type="text" ref={inputRef} placeholder="Search items" className="focus:outline-none" value={searchParam} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSearchParam(()=> e.target.value)} onKeyUp={handleKeyDown}/>
+                  <input type="text" ref={inputRef} placeholder="Search items" className="focus:outline-none" value={searchParam} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewSearchParam(()=> e.target.value)} onKeyDown={handleKeyDown}/>
                 </div>
                 {/* Specific filters */}
-                <FilterButton dropDownRefs={dropDownRefs} filterIndex={0} toggleDropdown={toggleDropdown} selectedBulkAction={filters.category} openStates={openStates} data={testCategories} filter="category" handleValueChange={handleFilterChange}/>
+                <FilterButton dropDownRefs={dropDownRefs} filterIndex={0} toggleDropdown={toggleDropdown} selectedBulkAction={filters.category} openStates={openStates} data={categories} filter="category" handleValueChange={handleFilterChange}/>
                 <FilterButton dropDownRefs={dropDownRefs} filterIndex={1} toggleDropdown={toggleDropdown} selectedBulkAction={filters.status} openStates={openStates} data={status} filter="status" handleValueChange={handleFilterChange}/>
                 <FilterButton dropDownRefs={dropDownRefs} filterIndex={2} toggleDropdown={toggleDropdown} selectedBulkAction={filters.type} openStates={openStates} data={types} filter="type" handleValueChange={handleFilterChange}/>
               </div>
@@ -534,7 +568,7 @@ export default function Home() {
               ? 
               <div>
                 {Array.from({length: endElem - startElem + 1}, (e, index) => (
-                  <FoodItem data={currentItems[paginationValue * (page - 1) + index]} key = {paginationValue * (page - 1) + index} selected={selectItemsIndex} changeSelectedItems={changeSelectedItems} dataEdit={editData} confirmDelete={confirmDelete}/>
+                  <FoodItem data={currentItems[paginationValue * (page - 1) + index]} key = {paginationValue * (page - 1) + index} ordered={selectItemsIndex} changeSelectedItems={changeSelectedItems} dataEdit={editData} confirmDelete={confirmDelete}/>
                 ))}
                 <div className="py-2 px-10 w-full flex items-center justify-between">
                   <div className="text-gray-500">
@@ -566,7 +600,7 @@ export default function Home() {
           {/* Popup Box */}
           <ManageCategories 
             isOpen={showManagePopup}
-            initialCategories={items.categories.map((name, i) => ({ id: String(i), name }))}
+            initialCategories={FoodItemDetails.categories.map((name, i) => ({ id: String(i), name }))}
             onSave={handleSaveCategories}
             onClose={() => setShowManagePopup(false)}
           />
@@ -579,8 +613,8 @@ export default function Home() {
 
           {/* Popup Box */}
           <AddMenuItemForm
-            onSave={addNewItem}
-            categories={items.categories}
+            onSave={handleSaveItem}
+            categories={FoodItemDetails.categories}
             onClose={() => {setShowAddItemPopup(false); setExistingItem(null);}}
             existingItem={existingItem != null ? existingItem.item : undefined}
           />
@@ -591,7 +625,7 @@ export default function Home() {
       { deletePopup && 
         <div className="fixed inset-0 z-20 flex items-center justify-center">
           <div className="fixed inset-0 popup"></div>
-          <ConfirmationPopup onConfirm={() => editData(2, itemToDelete)} onCancel={() => {setDeletePopup(false); changeItemToDelete("");}}/>
+          <ConfirmationPopup onConfirm={() => editData(2, itemToDelete)} onCancel={() => {setDeletePopup(false); changeItemToDelete(-1);}}/>
         </div>
       }
       {bulkDeletePopup &&

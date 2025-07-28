@@ -36,7 +36,7 @@ const AddMenuItemForm: React.FC<AddMenuItemFormProps> = ({ onSave, categories, o
     spiceLevel:"Mild",
     availability:false,
   };
-//Modified: added extra existingItem for edit popup
+//: added extra existingItem for edit popup
 const [ItemData, setItemData] = useState<MenuItem>(existingItem || initialState);
   
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({}); 
